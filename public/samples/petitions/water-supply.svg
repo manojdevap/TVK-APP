@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#e8f4f8"/>
+  <rect x="200" y="80" width="240" height="200" fill="#1E5AA8" rx="8"/>
+  <rect x="220" y="100" width="200" height="160" fill="#4fc3f7" rx="4"/>
+  <rect x="280" y="60" width="80" height="30" fill="#888" rx="4"/>
+  <path d="M320 260 L320 320" stroke="#888" stroke-width="8"/>
+  <ellipse cx="320" cy="340" rx="60" ry="15" fill="#1E5AA8" opacity="0.5"/>
+  <text x="320" y="380" text-anchor="middle" fill="#7A1F2B" font-family="Arial,sans-serif" font-size="18" font-weight="700">Irregular Water Supply</text>
+</svg>

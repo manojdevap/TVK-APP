@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f0eb;
+  --foreground: #1a1210;
+  --muted: #6b5c56;
+  --border: #e8ddd4;
+  --card: #ffffff;
+  --tvk-maroon: #7a1f2b;
+  --tvk-maroon-dark: #5c1520;
+  --tvk-yellow: #f4c430;
+  --tvk-yellow-light: #ffe566;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-tvk-maroon: var(--tvk-maroon);
+  --color-tvk-maroon-dark: var(--tvk-maroon-dark);
+  --color-tvk-yellow: var(--tvk-yellow);
+  --color-tvk-yellow-light: var(--tvk-yellow-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-border bg-card p-6 shadow-sm;
+  }
+
+  .card-hover {
+    @apply rounded-xl border border-border bg-card p-6 shadow-sm transition hover:border-tvk-maroon/40 hover:shadow-md;
+  }
+
+  .btn-primary {
+    @apply rounded-lg bg-tvk-maroon px-4 py-2 text-sm font-medium text-tvk-yellow transition hover:bg-tvk-maroon-dark disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply rounded-lg border border-tvk-maroon/30 bg-white px-4 py-2 text-sm font-medium text-tvk-maroon transition hover:bg-tvk-maroon/5;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-tvk-maroon focus:outline-none focus:ring-2 focus:ring-tvk-maroon/20;
+  }
+
+  select.input-field {
+    @apply appearance-auto pr-8;
+  }
+
+  select.input-field option {
+    color: var(--foreground);
+    background-color: #ffffff;
+  }
+
+  .link-back {
+    @apply inline-flex items-center text-sm font-medium text-tvk-maroon hover:text-tvk-maroon-dark hover:underline;
+  }
+
+  .table-wrap {
+    @apply overflow-x-auto rounded-xl border border-border bg-card shadow-sm;
+  }
+
+  .table-wrap table {
+    @apply w-full min-w-[640px] text-left text-sm;
+  }
+
+  .table-wrap thead {
+    @apply border-b border-border bg-background text-muted;
+  }
+
+  .table-wrap th {
+    @apply px-4 py-3 font-medium;
+  }
+
+  .table-wrap tbody {
+    @apply divide-y divide-border;
+  }
+
+  .table-wrap td {
+    @apply px-4 py-3;
+  }
+
+  .table-wrap tr:hover {
+    @apply bg-background/80;
+  }
 }
