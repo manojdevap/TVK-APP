@@ -10,8 +10,6 @@ export type Session = {
   userId: string;
   username: string;
   isAdmin: boolean;
-  /** May create accounts and issue passwords — see users.isSuperAdmin */
-  isSuperAdmin: boolean;
   mustChangePassword: boolean;
 };
 
@@ -42,9 +40,6 @@ export async function verifySessionToken(token: string): Promise<Session | null>
       userId: payload.userId,
       username: payload.username,
       isAdmin: payload.isAdmin === true,
-      // A token issued before super admins existed simply has no claim, which reads
-      // as false — the holder signs in again to get one.
-      isSuperAdmin: payload.isSuperAdmin === true,
       mustChangePassword: payload.mustChangePassword === true,
     };
   } catch {

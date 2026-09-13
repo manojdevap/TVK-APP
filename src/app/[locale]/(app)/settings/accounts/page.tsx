@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/shell/AppHeader";
 import { AccountsManager, type AccountRow } from "@/components/accounts/AccountsManager";
 import { getDb } from "@/db/client";
 import { users } from "@/db/schema";
-import { getSession } from "@/lib/auth/guard";
+import { getSession, isSuperAdmin } from "@/lib/auth/guard";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 
@@ -12,8 +12,8 @@ export default async function AccountsPage({ params }: { params: Promise<{ local
   const { locale: localeParam } = await params;
   const locale = resolveLocale(localeParam);
 
-  const session = await getSession();
-  if (!session?.isSuperAdmin) redirect(`/${locale}/settings`);
+  const [session, superAdmin] = await Promise.all([getSession(), isSuperAdmin()]);
+  if (!session || !superAdmin) redirect(`/${locale}/settings`);
 
   const dict = await getDictionary(locale);
   const db = getDb();

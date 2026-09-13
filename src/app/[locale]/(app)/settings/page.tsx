@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { getSession } from "@/lib/auth/guard";
+import { getSession, isSuperAdmin } from "@/lib/auth/guard";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 
@@ -13,7 +13,11 @@ export default async function SettingsPage({
 }) {
   const { locale: localeParam } = await params;
   const locale = resolveLocale(localeParam);
-  const [dict, session] = await Promise.all([getDictionary(locale), getSession()]);
+  const [dict, session, superAdmin] = await Promise.all([
+    getDictionary(locale),
+    getSession(),
+    isSuperAdmin(),
+  ]);
 
   return (
     <>
@@ -39,7 +43,7 @@ export default async function SettingsPage({
           <LanguageSwitcher locale={locale} />
         </section>
 
-        {session?.isSuperAdmin && (
+        {superAdmin && (
           <section className="space-y-2">
             <h2 className="section-title">{dict.accounts.title}</h2>
             <Link
