@@ -1,128 +1,84 @@
 import Link from "next/link";
-import { GenderBreakdown } from "@/components/ui/GenderBreakdown";
-import { DataSourceBanner } from "@/components/ui/DataSourceBanner";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { StatCard } from "@/components/ui/StatCard";
-import { Card } from "@/components/ui/Card";
-import {
-  fetchEvents,
-  fetchPetitions,
-  fetchUsers,
-  fetchWards,
-} from "@/lib/data/queries";
-import type { Locale } from "@/i18n/config";
+import { AppHeader } from "@/components/shell/AppHeader";
+import { Stat } from "@/components/ui/Empty";
+import { getTotals, listWards } from "@/server/queries";
+import { getPetitionTotals } from "@/server/petition-queries";
+import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { genderBreakdown } from "@/lib/stats";
 
-export default async function DashboardPage({
-  params,
-}: {
-  params: Promise<{ locale: Locale }>;
-}) {
-  const { locale } = await params;
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: localeParam } = await params;
+  const locale = resolveLocale(localeParam);
   const dict = await getDictionary(locale);
 
-  const { data: wards, source } = await fetchWards(locale);
-  const { data: users } = await fetchUsers();
-  const { data: events } = await fetchEvents(locale);
-  const { data: petitions } = await fetchPetitions(locale);
-
-  const totalVoters = wards.reduce((sum, w) => sum + w.totalVoters, 0);
-  const totalOurVotes = wards.reduce((sum, w) => sum + w.ourVotes, 0);
-  const ourVoteUsers = users.filter((u) => u.isOurVote);
+  const [totals, wards, petitionTotals] = await Promise.all([
+    getTotals(),
+    listWards(),
+    getPetitionTotals(),
+  ]);
+  const withoutOrganiser = totals.wards - totals.wardsWithOrganiser;
+  const busiest = [...wards].sort((a, b) => b.memberCount - a.memberCount).slice(0, 5);
 
   return (
     <>
-      <DataSourceBanner source={source} dict={dict} />
-      <PageHeader
-        title={dict.dashboard.title}
-        description={dict.dashboard.description}
-      />
+      <AppHeader locale={locale} dict={dict} />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label={dict.dashboard.wards} value={wards.length} />
-        <StatCard label={dict.dashboard.totalVoters} value={totalVoters.toLocaleString()} />
-        <StatCard
-          label={dict.dashboard.ourVotes}
-          value={totalOurVotes.toLocaleString()}
-          subtext={`${totalVoters ? Math.round((totalOurVotes / totalVoters) * 100) : 0}% ${dict.common.ofTotal}`}
-        />
-        <StatCard
-          label={dict.dashboard.activeEvents}
-          value={events.filter((e) => e.status === "planned").length}
-        />
-      </div>
+      <main className="mx-auto max-w-lg space-y-5 px-4 py-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Stat label={dict.home.totalMembers} value={totals.members.toLocaleString()} />
+          <Stat
+            label={dict.home.wardsWithOrganiser}
+            value={`${totals.wardsWithOrganiser}/${totals.wards}`}
+            hint={
+              withoutOrganiser > 0
+                ? `${withoutOrganiser} ${dict.home.wardsNeedingOrganiser}`
+                : dict.home.allWardsCovered
+            }
+          />
+        </div>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
-        <GenderBreakdown
-          title={dict.dashboard.allUsersMF}
-          stats={genderBreakdown(users)}
-          maleLabel={dict.common.male}
-          femaleLabel={dict.common.female}
-        />
-        <GenderBreakdown
-          title={dict.dashboard.ourVoteContactsMF}
-          stats={genderBreakdown(ourVoteUsers)}
-          maleLabel={dict.common.male}
-          femaleLabel={dict.common.female}
-        />
-        <GenderBreakdown
-          title={dict.dashboard.petitionersMF}
-          stats={genderBreakdown(
-            petitions
-              .map((p) => users.find((u) => u.id === p.petitionerId)!)
-              .filter(Boolean)
-          )}
-          maleLabel={dict.common.male}
-          femaleLabel={dict.common.female}
-        />
-      </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Stat label={dict.petitions.openCount} value={petitionTotals.open} />
+          <Stat label={dict.petitionStatus.resolved} value={petitionTotals.resolved} />
+        </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">{dict.dashboard.recentEvents}</h2>
-          {events.length === 0 ? (
-            <p className="mt-4 text-sm text-muted">{dict.dataSource.emptyEvents}</p>
-          ) : (
-            <ul className="mt-4 divide-y divide-border">
-              {events.slice(0, 3).map((event) => (
-                <li key={event.id} className="py-3">
-                  <Link
-                    href={`/${locale}/events/${event.id}`}
-                    className="font-medium text-foreground hover:text-tvk-maroon"
-                  >
-                    {event.title}
+        <div className="flex gap-2">
+          <Link href={`/${locale}/members/new`} className="btn-primary flex-1">
+            {dict.home.addMember}
+          </Link>
+          <Link href={`/${locale}/wards`} className="btn-secondary flex-1">
+            {dict.home.browseWards}
+          </Link>
+        </div>
+
+        {busiest.some((ward) => ward.memberCount > 0) && (
+          <section className="space-y-2">
+            <h2 className="section-title">{dict.wards.title}</h2>
+            <ul className="card divide-y divide-border p-0">
+              {busiest.map((ward) => (
+                <li key={ward.id}>
+                  <Link href={`/${locale}/wards/${ward.number}`} className="tap-row justify-between">
+                    <span className="min-w-0 truncate">
+                      <span className="font-medium text-foreground">
+                        {dict.wards.ward} {ward.number}
+                      </span>
+                      {(locale === "ta" ? ward.nameTa : ward.nameEn) && (
+                        <span className="text-muted">
+                          {" "}
+                          — {locale === "ta" ? ward.nameTa : ward.nameEn}
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 text-sm tabular-nums text-muted">
+                      {ward.memberCount}
+                    </span>
                   </Link>
-                  <p className="text-xs text-muted">
-                    {event.date} · {event.participantIds.length} {dict.common.participants}
-                  </p>
                 </li>
               ))}
             </ul>
-          )}
-        </Card>
-
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">{dict.dashboard.openPetitions}</h2>
-          {petitions.filter((p) => p.status !== "resolved").length === 0 ? (
-            <p className="mt-4 text-sm text-muted">{dict.dataSource.emptyPetitions}</p>
-          ) : (
-            <ul className="mt-4 divide-y divide-border">
-              {petitions
-                .filter((p) => p.status !== "resolved")
-                .slice(0, 3)
-                .map((petition) => (
-                  <li key={petition.id} className="py-3">
-                    <p className="font-medium text-foreground">{petition.title}</p>
-                    <p className="text-xs text-muted">
-                      {dict.petitionStatus[petition.status]}
-                    </p>
-                  </li>
-                ))}
-            </ul>
-          )}
-        </Card>
-      </div>
+          </section>
+        )}
+      </main>
     </>
   );
 }

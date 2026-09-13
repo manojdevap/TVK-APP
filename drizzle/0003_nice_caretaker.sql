@@ -1,0 +1,1 @@
+ALTER TABLE "events" ALTER COLUMN "ward_id" DROP NOT NULL;

@@ -1,76 +1,56 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/Badge";
-import { DataSourceBanner } from "@/components/ui/DataSourceBanner";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { fetchUsers, fetchWards } from "@/lib/data/queries";
-import type { Locale } from "@/i18n/config";
+import { AppHeader } from "@/components/shell/AppHeader";
+import { Empty } from "@/components/ui/Empty";
+import { listWards } from "@/server/queries";
+import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 
-export default async function WardsPage({
-  params,
-}: {
-  params: Promise<{ locale: Locale }>;
-}) {
-  const { locale } = await params;
+export default async function WardsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: localeParam } = await params;
+  const locale = resolveLocale(localeParam);
   const dict = await getDictionary(locale);
-  const { data: wards, source } = await fetchWards(locale);
-  const { data: users } = await fetchUsers();
+  const wards = await listWards();
 
   return (
     <>
-      <DataSourceBanner source={source} dict={dict} />
-      <PageHeader title={dict.wards.title} description={dict.wards.description} />
+      <AppHeader locale={locale} dict={dict} title={dict.wards.title} />
 
-      {wards.length === 0 ? (
-        <EmptyState message={dict.dataSource.emptyWards} />
-      ) : (
-        <div className="grid gap-4">
-          {wards.map((ward) => {
-            const head = users.find((u) => u.id === ward.headId);
-            const organiser = users.find((u) => u.id === ward.organiserId);
+      <main className="mx-auto max-w-lg space-y-3 px-4 py-4">
+        <p className="text-sm text-muted">{dict.wards.subtitle}</p>
 
-            return (
-              <Link key={ward.id} href={`/${locale}/wards/${ward.id}`} className="card-hover block">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <h2 className="text-lg font-semibold text-foreground">{ward.name}</h2>
-                    <p className="mt-1 text-sm text-muted">{ward.area}</p>
-                  </div>
-                  <Badge variant="info">
-                    {dict.common.ward} {ward.number}
-                  </Badge>
-                </div>
-
-                <div className="mt-4 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <p className="text-muted">{dict.wards.totalVoters}</p>
-                    <p className="font-semibold text-foreground">{ward.totalVoters.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted">{dict.wards.ourVotes}</p>
-                    <p className="font-semibold text-foreground">{ward.ourVotes.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted">{dict.wards.wardHead}</p>
-                    <p className="font-semibold text-foreground">{head?.username ?? "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted">{dict.wards.organiser}</p>
-                    <p className="font-semibold text-foreground">{organiser?.username ?? "—"}</p>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-                  <span>{dict.wards.maleVoters}: {ward.maleVoters.toLocaleString()}</span>
-                  <span>{dict.wards.femaleVoters}: {ward.femaleVoters.toLocaleString()}</span>
-                  <span>{ward.memberIds.length} {dict.wards.wardMembers}</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+        {wards.length === 0 ? (
+          <Empty title={dict.wards.empty} />
+        ) : (
+          <ul className="card divide-y divide-border p-0">
+            {wards.map((ward) => {
+              const name = locale === "ta" ? ward.nameTa : ward.nameEn;
+              const area = locale === "ta" ? ward.areaTa : ward.areaEn;
+              return (
+                <li key={ward.id}>
+                  <Link href={`/${locale}/wards/${ward.number}`} className="tap-row justify-between">
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-yellow-soft text-sm font-bold tabular-nums text-maroon-dark">
+                        {ward.number}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium text-foreground">
+                          {name || `${dict.wards.ward} ${ward.number}`}
+                        </span>
+                        {area && <span className="block truncate text-xs text-muted">{area}</span>}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-sm tabular-nums text-muted">
+                      {ward.memberCount > 0
+                        ? `${ward.memberCount} ${dict.wards.memberCount}`
+                        : dict.wards.noMembers}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </main>
     </>
   );
 }

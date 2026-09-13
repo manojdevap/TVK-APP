@@ -1,33 +1,51 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Noto_Sans, Noto_Sans_Tamil } from "next/font/google";
+import { ServiceWorker } from "@/components/pwa/ServiceWorker";
 import { party } from "@/config/party";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const sans = Noto_Sans({
+  variable: "--font-app-sans-latin",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const tamil = Noto_Sans_Tamil({
+  variable: "--font-app-sans-tamil",
+  subsets: ["tamil"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: `${party.shortEn} Ward Tracker — Nandhivaram Guduvancheri`,
-  description: `${party.fullLabelEn} ward management for Nandhivaram Guduvancheri Municipality — events, voters, petitions.`,
+  title: `${party.shortEn} Nandhivaram Guduvancheri Municipality`,
+  description:
+    "Members, events and petitions for Nandhivaram Guduvancheri Municipality.",
+  applicationName: `${party.shortEn} Nandhivaram Guduvancheri Municipality`,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    // Shown under the icon once installed, where only a few characters fit
+    title: party.shortEn,
+  },
+  formatDetection: { telephone: false },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  themeColor: party.colors.maroon,
+  width: "device-width",
+  initialScale: 1,
+  // Let people pinch-zoom; locking it out fails WCAG and helps nobody.
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full font-sans">{children}</body>
+    <html className={`${sans.variable} ${tamil.variable}`}>
+      <body className="font-sans">
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }

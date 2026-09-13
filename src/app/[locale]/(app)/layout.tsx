@@ -1,6 +1,12 @@
-import { AppShell } from "@/components/layout/AppShell";
-import type { Locale } from "@/i18n/config";
+import { BottomNav } from "@/components/shell/BottomNav";
+import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+
+/**
+ * Every screen in here shows live roster data behind a sign-in, so nothing may be
+ * prerendered at build time or cached between people.
+ */
+export const dynamic = "force-dynamic";
 
 export default async function AppLayout({
   children,
@@ -9,13 +15,20 @@ export default async function AppLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale: rawLocale } = await params;
-  const locale = rawLocale as Locale;
+  const { locale: localeParam } = await params;
+  const locale = resolveLocale(localeParam);
   const dict = await getDictionary(locale);
 
   return (
-    <AppShell locale={locale} dict={dict}>
+    /*
+     * No min-height here on purpose. The nav is fixed, so nothing needs a
+     * full-height container — and `100dvh` grows when a phone hides its URL bar,
+     * which stretched this box and left empty scrollable space under the content.
+     * The padding alone is what keeps the last row clear of the bar.
+     */
+    <div style={{ paddingBottom: "var(--bottom-nav)" }}>
       {children}
-    </AppShell>
+      <BottomNav locale={locale} dict={dict} />
+    </div>
   );
 }

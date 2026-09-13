@@ -1,95 +1,134 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f0eb;
+  --background: #f6f2ef;
+  --surface: #ffffff;
+  --surface-sunk: #efe7e3;
   --foreground: #1a1210;
-  --muted: #6b5c56;
-  --border: #e8ddd4;
-  --card: #ffffff;
+  --muted: #6d5b55;
+  --border: #e4d8d3;
+
   --tvk-maroon: #7a1f2b;
   --tvk-maroon-dark: #5c1520;
   --tvk-yellow: #f4c430;
-  --tvk-yellow-light: #ffe566;
+  --tvk-yellow-soft: #fdf3d8;
+
+  --success: #1b6e4b;
+  --danger: #b3261e;
+  --danger-soft: #fceceb;
+
+  /* The bar is 4rem of tap target plus its 1px top border, then the phone's gesture area */
+  --bottom-nav: calc(4rem + 1px + env(safe-area-inset-bottom, 0px));
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-sunk: var(--surface-sunk);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
-  --color-card: var(--card);
-  --color-tvk-maroon: var(--tvk-maroon);
-  --color-tvk-maroon-dark: var(--tvk-maroon-dark);
-  --color-tvk-yellow: var(--tvk-yellow);
-  --color-tvk-yellow-light: var(--tvk-yellow-light);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-maroon: var(--tvk-maroon);
+  --color-maroon-dark: var(--tvk-maroon-dark);
+  --color-yellow: var(--tvk-yellow);
+  --color-yellow-soft: var(--tvk-yellow-soft);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-app-sans-latin), var(--font-app-sans-tamil), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--background);
+  /* Stop iOS Safari from inflating text in landscape */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
 }
 
 @layer components {
   .card {
-    @apply rounded-xl border border-border bg-card p-6 shadow-sm;
+    @apply rounded-2xl border border-border bg-surface p-4 shadow-[0_1px_2px_rgba(26,18,16,0.04)];
   }
 
-  .card-hover {
-    @apply rounded-xl border border-border bg-card p-6 shadow-sm transition hover:border-tvk-maroon/40 hover:shadow-md;
+  /* Every interactive row is at least 44px tall — a thumb, not a mouse pointer */
+  .tap-row {
+    @apply flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition active:bg-surface-sunk;
+  }
+
+  /* Tailwind v4's @apply takes utilities only, never another component class,
+     so each variant repeats the shared button utilities rather than composing. */
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply rounded-lg bg-tvk-maroon px-4 py-2 text-sm font-medium text-tvk-yellow transition hover:bg-tvk-maroon-dark disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition disabled:opacity-50
+      bg-maroon text-yellow active:bg-maroon-dark;
   }
 
   .btn-secondary {
-    @apply rounded-lg border border-tvk-maroon/30 bg-white px-4 py-2 text-sm font-medium text-tvk-maroon transition hover:bg-tvk-maroon/5;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition disabled:opacity-50
+      border border-border bg-surface text-maroon active:bg-surface-sunk;
   }
 
-  .input-field {
-    @apply w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-tvk-maroon focus:outline-none focus:ring-2 focus:ring-tvk-maroon/20;
+  .btn-danger {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition disabled:opacity-50
+      border border-danger/30 bg-danger-soft text-danger;
   }
 
-  select.input-field {
-    @apply appearance-auto pr-8;
+  .field-label {
+    @apply mb-1 block text-sm font-medium text-foreground;
   }
 
-  select.input-field option {
-    color: var(--foreground);
-    background-color: #ffffff;
+  /* 16px keeps iOS from zooming the viewport when a field takes focus */
+  .field {
+    @apply min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-base text-foreground
+      placeholder:text-muted/70 focus:border-maroon focus:outline-none focus:ring-2 focus:ring-maroon/20;
   }
 
-  .link-back {
-    @apply inline-flex items-center text-sm font-medium text-tvk-maroon hover:text-tvk-maroon-dark hover:underline;
+  textarea.field {
+    @apply py-2.5;
   }
 
-  .table-wrap {
-    @apply overflow-x-auto rounded-xl border border-border bg-card shadow-sm;
+  .field-hint {
+    @apply mt-1 text-xs text-muted;
   }
 
-  .table-wrap table {
-    @apply w-full min-w-[640px] text-left text-sm;
+  .field-error {
+    @apply mt-1 text-xs font-medium text-danger;
   }
 
-  .table-wrap thead {
-    @apply border-b border-border bg-background text-muted;
+  .chip {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
 
-  .table-wrap th {
-    @apply px-4 py-3 font-medium;
+  .chip-role {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
+      bg-yellow-soft text-maroon-dark;
   }
 
-  .table-wrap tbody {
-    @apply divide-y divide-border;
+  .chip-muted {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
+      border border-border bg-surface-sunk text-muted;
   }
 
-  .table-wrap td {
-    @apply px-4 py-3;
+  .section-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-muted;
   }
+}
 
-  .table-wrap tr:hover {
-    @apply bg-background/80;
+/* Respect users who have asked for less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

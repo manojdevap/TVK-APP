@@ -1,9 +1,0 @@
-username,address,voterId,wardNumber,gender,isOurVote,role,phone
-"R. Velu","10 Temple St, Nandhivaram","TN/NG/2024/009001",1,"male","true","ward_member","9876500001"
-"K. Kamala","22 Anna Nagar Extension","TN/NG/2024/009002",1,"female","true","ward_member","9876500002"
-"P. Rajesh","55 Bus Stand Road, Guduvancheri","TN/NG/2024/009003",2,"male","true","ward_member","9876500003"
-"M. Valli","18 Park Avenue, Ward 2","TN/NG/2024/009004",2,"female","false","ward_member","9876500004"
-"S. Ilango","5 GST Road, Workers Colony","TN/NG/2024/009005",3,"male","true","ward_member","9876500005"
-"H. Devi","12 Factory Lane, Ward 3","TN/NG/2024/009006",3,"female","true","ward_member","9876500006"
-"G. Mani","8 Market Lane, Nandhivaram","TN/NG/2024/009007",1,"male","false",,"9876500007"
-"N. Selvi","44 Railway Colony, Ward 1","TN/NG/2024/009008",1,"female","true",,"9876500008"

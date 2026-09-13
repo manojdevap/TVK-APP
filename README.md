@@ -1,36 +1,149 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TVK Nandhivaram Guduvancheri Municipality
 
-## Getting Started
+Party app for **Nandhivaram Guduvancheri Municipality** — the ward roster, the events
+the party runs, and the grievances residents bring. English and Tamil, built phone-first,
+installable as an app.
 
-First, run the development server:
+One Next.js application: the pages and the server logic live together and deploy as a
+single unit. Data is in Postgres (Neon). There is no separate backend service.
+
+## What it does
+
+- **Wards 1–30**, each showing its member count, leadership, events and petitions
+- **Members** — name, ward, role, gender, and optionally phone, address, voter ID, photo
+- **Events** — for one ward or the whole party, with a banner and a photo gallery
+- **Petitions** — resident grievances for one ward or the whole town, tracked from
+  submitted through to resolved, with evidence photos
+- **Roles** an admin defines, with a per-ward limit on each
+- Sign in with a username and password
+- Installable progressive web app, English and Tamil
+
+**Not built yet:** logins for members themselves. Members are records here, not
+accounts — every change goes through an admin.
+
+## Requirements
+
+- Node.js 22 or newer (`node --version`)
+- A Neon Postgres database — the free tier is enough
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Fill in both values:
 
-## Learn More
+| Variable | Where it comes from |
+| --- | --- |
+| `DATABASE_URL` | Neon dashboard → your project → Connection Details → **pooled** connection string |
+| `SESSION_SECRET` | Generate one (below). At least 32 characters |
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+In production the app refuses to issue or accept sessions without a real
+`SESSION_SECRET` — a guessable one would let anyone forge an admin session.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create the tables, seed the wards and roles, then make yourself an admin:
 
-## Deploy on Vercel
+```bash
+npm run db:migrate      # creates the tables
+npm run db:seed         # wards 1-30 and the default roles
+npm run create-admin -- yourname
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`create-admin` prompts for the password without echoing it, so it never reaches your
+shell history.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Run
+
+```bash
+npm run dev     # http://localhost:3000
+```
+
+For production:
+
+```bash
+npm run build
+npm run start
+```
+
+Installing to a home screen needs HTTPS, so the install prompt appears on a deployed
+site, not on `localhost`. To test it locally, run `npx next dev --experimental-https`.
+
+## Deploying to Vercel
+
+1. Push the repository and import it in Vercel.
+2. Set `DATABASE_URL` and `SESSION_SECRET` as environment variables.
+3. Deploy.
+
+Run `npm run db:migrate` against the production database whenever the schema changes —
+it is not run automatically on deploy, so a migration never surprises you mid-release.
+
+## Roles
+
+Roles are data, not code. Three are seeded:
+
+| Role | Limit per ward |
+| --- | --- |
+| Organiser | 1 |
+| Associate Organiser | unlimited |
+| Member | unlimited |
+
+An admin can rename any of them and add new ones under **Settings → Roles**, setting
+each one's per-ward limit. The three seeded roles can be renamed but not deleted, and a
+role that members still hold cannot be deleted at all.
+
+Roles carry **no permissions**. Who may change data is decided by the `is_admin` flag on
+an account, so adding a role can never accidentally hand out write access.
+
+## Changing the database
+
+Edit `src/db/schema.ts`, then:
+
+```bash
+npm run db:generate     # writes a new SQL file into drizzle/
+npm run db:migrate      # applies it
+```
+
+The generated SQL is committed, so every environment applies the same statements.
+`npm run db:studio` opens a browser UI over the data.
+
+## Locked out?
+
+There is no email reset, because the app stores no email addresses. Re-run:
+
+```bash
+npm run create-admin -- yourname
+```
+
+on an existing username and it sets a new password. This needs `DATABASE_URL`, so treat
+access to that connection string as equivalent to admin access.
+
+## Project layout
+
+```
+drizzle/                 Generated SQL migrations (committed)
+scripts/                 Seed and admin bootstrap, run with node directly
+src/
+  app/[locale]/          Pages. (app) holds the signed-in screens
+  components/            UI, grouped by feature
+  db/                    Drizzle schema and the Neon connection
+  server/
+    queries.ts           Reads, used by server components
+    *-actions.ts         Writes, called from client components
+  lib/auth/              Sessions, passwords, throttling, permission guards
+  i18n/dictionaries/     en.ts is the source of truth; ta.ts is typed against it
+  proxy.ts               Sign-in gate (Next.js 16 renamed middleware to proxy)
+```
+
+A new UI string goes in **both** `en.ts` and `ta.ts` — Tamil is typed against English,
+so a missing key fails the build.
