@@ -1,7 +1,11 @@
 /**
- * Create or reset an admin account.
+ * Create or reset a super admin account.
  *
  *   npm run create-admin -- <username>
+ *
+ * A super admin can create every other account from inside the app, so this command
+ * only has to be run once when setting the app up — and again if the super admin is
+ * ever locked out.
  *
  * Prompts for the password without echoing it, so it never reaches shell history.
  * This is also the recovery path if nobody can sign in — there is no email reset,
@@ -85,7 +89,7 @@ async function main() {
     .where(sql`lower(${schema.users.username}) = lower(${username})`)
     .limit(1);
 
-  const action = existing.length ? "Resetting password for" : "Creating admin";
+  const action = existing.length ? "Resetting password for" : "Creating super admin";
   console.log(`\n${action} "${username}".`);
 
   const password = await askHidden("Password: ");
@@ -102,7 +106,7 @@ async function main() {
   if (existing.length) {
     await db
       .update(schema.users)
-      .set({ passwordHash, isAdmin: true, mustChangePassword: false })
+      .set({ passwordHash, isAdmin: true, isSuperAdmin: true, mustChangePassword: false })
       .where(eq(schema.users.id, existing[0].id));
   } else {
     await db.insert(schema.users).values({
@@ -110,6 +114,7 @@ async function main() {
       displayName: username,
       passwordHash,
       isAdmin: true,
+      isSuperAdmin: true,
       mustChangePassword: false,
     });
   }

@@ -33,3 +33,15 @@ export async function requireAdmin(): Promise<Session> {
   if (!session.isAdmin) throw new ForbiddenError();
   return session;
 }
+
+/**
+ * Account management sits above ordinary admin: only a super admin may create a
+ * login, issue a password or grant admin to someone else.
+ */
+export async function requireSuperAdmin(): Promise<Session> {
+  const session = await requireSession();
+  if (!session.isSuperAdmin) {
+    throw new ForbiddenError("Only a super admin can manage accounts");
+  }
+  return session;
+}

@@ -215,6 +215,12 @@ export const users = pgTable(
     displayName: text("display_name").notNull().default(""),
     passwordHash: text("password_hash").notNull(),
     isAdmin: boolean("is_admin").notNull().default(false),
+    /**
+     * The tier above admin: may create accounts, issue passwords and grant admin.
+     * Separate from `isAdmin` so that letting someone edit the roster does not also
+     * let them make more accounts.
+     */
+    isSuperAdmin: boolean("is_super_admin").notNull().default(false),
     mustChangePassword: boolean("must_change_password").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

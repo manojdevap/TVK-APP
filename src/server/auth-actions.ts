@@ -40,6 +40,7 @@ export async function signIn(username: string, password: string): Promise<SignIn
       userId: user.id,
       username: user.username,
       isAdmin: user.isAdmin,
+      isSuperAdmin: user.isSuperAdmin,
       mustChangePassword: user.mustChangePassword,
     });
 
@@ -83,6 +84,7 @@ export async function changePassword(
       userId: user.id,
       username: user.username,
       isAdmin: user.isAdmin,
+      isSuperAdmin: user.isSuperAdmin,
       mustChangePassword: false,
     });
 

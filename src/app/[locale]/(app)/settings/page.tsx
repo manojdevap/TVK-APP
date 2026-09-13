@@ -39,6 +39,26 @@ export default async function SettingsPage({
           <LanguageSwitcher locale={locale} />
         </section>
 
+        {session?.isSuperAdmin && (
+          <section className="space-y-2">
+            <h2 className="section-title">{dict.accounts.title}</h2>
+            <Link
+              href={`/${locale}/settings/accounts`}
+              className="card tap-row justify-between"
+            >
+              <span>
+                <span className="block font-medium text-foreground">
+                  {dict.accounts.manage}
+                </span>
+                <span className="block text-xs text-muted">{dict.accounts.manageHint}</span>
+              </span>
+              <span aria-hidden="true" className="text-muted">
+                ›
+              </span>
+            </Link>
+          </section>
+        )}
+
         {session?.isAdmin && (
           <section className="space-y-2">
             <h2 className="section-title">{dict.roles.title}</h2>
