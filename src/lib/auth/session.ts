@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { ConfigError } from "@/lib/config-error";
 
 export const SESSION_COOKIE = "tvk_session";
 const SESSION_DAYS = 30;
@@ -17,9 +18,10 @@ function secretKey() {
 
   if (!secret || secret.length < 32) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        "SESSION_SECRET must be at least 32 characters in production. " +
-          'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
+      throw new ConfigError(
+        secret
+          ? "SESSION_SECRET is too short — it must be at least 32 characters."
+          : "SESSION_SECRET is not set on the server."
       );
     }
     return new TextEncoder().encode(secret || DEV_SECRET);

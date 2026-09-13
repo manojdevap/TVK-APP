@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
+import { ConfigError } from "@/lib/config-error";
 
 /**
  * One Neon HTTP connection per serverless invocation.
@@ -12,9 +13,7 @@ import * as schema from "./schema";
 function connectionString(): string {
   const url = process.env.DATABASE_URL;
   if (!url) {
-    throw new Error(
-      "DATABASE_URL is not set. Copy it from your Neon project's connection details into .env.local"
-    );
+    throw new ConfigError("DATABASE_URL is not set on the server.");
   }
   return url;
 }

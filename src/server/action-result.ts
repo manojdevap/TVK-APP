@@ -1,4 +1,5 @@
 import { ForbiddenError, UnauthorizedError } from "@/lib/auth/guard";
+import { ConfigError } from "@/lib/config-error";
 import { ValidationError } from "@/lib/validation";
 
 export type ActionResult<T = undefined> =
@@ -15,6 +16,13 @@ export function failure(error: string, field?: string): ActionResult<never> {
  */
 export function toFailure(err: unknown): ActionResult<never> {
   if (err instanceof ValidationError) return failure(err.message, err.field);
+
+  // Names the missing setting, never its value — otherwise a fresh deployment fails
+  // with a message nobody can act on.
+  if (err instanceof ConfigError) {
+    console.error("[config]", err.message);
+    return failure(`${err.message} Ask an administrator to set it and redeploy.`);
+  }
   if (err instanceof UnauthorizedError) return failure(err.message);
   if (err instanceof ForbiddenError) return failure(err.message);
 
