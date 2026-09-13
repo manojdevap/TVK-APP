@@ -51,3 +51,6 @@ next-env.d.ts
 
 # Local assistant/editor tooling
 .claude/
+
+.vercel
+.env*

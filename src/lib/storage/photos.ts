@@ -13,8 +13,20 @@ export function isPhotoFolder(value: unknown): value is PhotoFolder {
   return typeof value === "string" && PHOTO_FOLDERS.includes(value as PhotoFolder);
 }
 
+/**
+ * Vercel Blob accepts either a static read/write token or, on a deployment, the
+ * short-lived OIDC credential paired with the store id.
+ *
+ * Connecting a store to a project provisions `BLOB_STORE_ID` and leaves the OIDC
+ * token to the runtime — it does not create a static token — so checking only for
+ * `BLOB_READ_WRITE_TOKEN` rejects a perfectly well configured deployment.
+ */
 function hasBlobStore() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  if (process.env.BLOB_READ_WRITE_TOKEN) return true;
+
+  return Boolean(
+    process.env.BLOB_STORE_ID && (process.env.VERCEL_OIDC_TOKEN || process.env.VERCEL)
+  );
 }
 
 function assertUsable(file: File) {
@@ -55,7 +67,8 @@ export async function savePhoto(file: File, folder: PhotoFolder): Promise<string
 
   if (process.env.NODE_ENV === "production") {
     throw new PhotoError(
-      "Photo storage is not configured. Create a Vercel Blob store and set BLOB_READ_WRITE_TOKEN."
+      "Photo storage is not configured. Connect a Vercel Blob store to this project, " +
+        "or set BLOB_READ_WRITE_TOKEN, then redeploy."
     );
   }
 
