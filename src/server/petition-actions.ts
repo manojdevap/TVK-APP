@@ -8,6 +8,7 @@ import type { Department, PetitionStatus } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/guard";
 import { deletePhoto, isAppPhotoUrl } from "@/lib/storage/photos";
 import {
+  optionalCoordinates,
   optionalPhone,
   optionalText,
   requireText,
@@ -35,6 +36,10 @@ export type PetitionInput = {
   /** "ward" needs a wardId; "municipality" affects the whole town and has none */
   scope: PetitionScope;
   wardId?: string;
+  /** Where the problem is, in words */
+  place?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   petitionerName: string;
   submittedOn: string;
   description?: string;
@@ -133,6 +138,8 @@ async function parse(input: PetitionInput) {
   return {
     title: requireText(input.title, "title", "Title", 160),
     wardId: resolveWard(input),
+    place: optionalText(input.place, "place", "Place", 160),
+    ...optionalCoordinates(input.latitude, input.longitude),
     petitionerName: requireText(input.petitionerName, "petitionerName", "Petitioner name", 120),
     petitionerPhone: optionalPhone(input.petitionerPhone),
     description: optionalText(input.description, "description", "Description", 2000),

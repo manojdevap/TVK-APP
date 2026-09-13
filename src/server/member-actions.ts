@@ -7,6 +7,7 @@ import { members, roles } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/guard";
 import { deletePhoto, isAppPhotoUrl } from "@/lib/storage/photos";
 import {
+  optionalCoordinates,
   optionalDate,
   optionalPhone,
   optionalText,
@@ -26,6 +27,9 @@ export type MemberInput = {
   phone?: string;
   address?: string;
   voterId?: string;
+  /** Both or neither — a latitude alone is not a place */
+  latitude?: number | null;
+  longitude?: number | null;
   photoUrl?: string;
   joinedOn?: string;
   notes?: string;
@@ -40,6 +44,7 @@ function parse(input: MemberInput) {
     phone: optionalPhone(input.phone),
     address: optionalText(input.address, "address", "Address") ?? "",
     voterId: optionalVoterId(input.voterId),
+    ...optionalCoordinates(input.latitude, input.longitude),
     photoUrl: optionalPhotoUrl(input.photoUrl),
     joinedOn: optionalDate(input.joinedOn, "joinedOn", "Joined on"),
     notes: optionalText(input.notes, "notes", "Notes", 1000),

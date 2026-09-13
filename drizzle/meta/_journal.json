@@ -64,6 +64,13 @@
       "when": 1789331442197,
       "tag": "0008_super_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789332319582,
+      "tag": "0009_location",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/shell/AppHeader";
+import { DirectionsLink } from "@/components/ui/DirectionsLink";
+import { coordinatesOf } from "@/lib/location";
 import { StatusChip } from "@/components/petitions/StatusChip";
 import { StatusActions } from "@/components/petitions/StatusActions";
 import { EventDate } from "@/components/events/EventDate";
@@ -25,6 +27,8 @@ export default async function PetitionDetailPage({
   ]);
 
   if (!item) notFound();
+
+  const petitionPin = coordinatesOf(item);
 
   const photos = await listPetitionPhotos(item.id);
   const isAdmin = session?.isAdmin ?? false;
@@ -72,6 +76,8 @@ export default async function PetitionDetailPage({
             )}
           </Row>
 
+          {item.place && <Row label={dict.location.place}>{item.place}</Row>}
+
           <Row label={dict.petitions.submittedOn}>
             <EventDate
               value={item.submittedOn}
@@ -81,6 +87,10 @@ export default async function PetitionDetailPage({
             />
           </Row>
         </div>
+
+        {petitionPin && (
+          <DirectionsLink dict={dict} coordinates={petitionPin} place={item.place} />
+        )}
 
         <div className="card space-y-3">
           <h3 className="section-title">{dict.petitions.whoRaised}</h3>

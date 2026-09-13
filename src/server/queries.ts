@@ -28,6 +28,8 @@ export type MemberRow = {
   gender: "male" | "female" | "other";
   address: string;
   voterId: string | null;
+  latitude: number | null;
+  longitude: number | null;
   photoUrl: string | null;
   joinedOn: string | null;
   notes: string | null;
@@ -47,6 +49,8 @@ const memberColumns = {
   gender: members.gender,
   address: members.address,
   voterId: members.voterId,
+  latitude: members.latitude,
+  longitude: members.longitude,
   photoUrl: members.photoUrl,
   joinedOn: members.joinedOn,
   notes: members.notes,
@@ -205,6 +209,9 @@ export type EventRow = {
   title: string;
   description: string | null;
   eventDate: string;
+  venue: string | null;
+  latitude: number | null;
+  longitude: number | null;
   bannerUrl: string | null;
   wardId: string | null;
   wardNumber: number | null;
@@ -218,6 +225,9 @@ const eventColumns = {
   title: events.title,
   description: events.description,
   eventDate: events.eventDate,
+  venue: events.venue,
+  latitude: events.latitude,
+  longitude: events.longitude,
   bannerUrl: events.bannerUrl,
   wardId: events.wardId,
   wardNumber: wards.number,

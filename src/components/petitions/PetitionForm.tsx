@@ -11,6 +11,7 @@ import {
 import { OrganiserPicker } from "@/components/events/OrganiserPicker";
 import { ErrorNote } from "@/components/ui/Empty";
 import { PhotoGalleryField } from "@/components/ui/PhotoGalleryField";
+import { LocationField } from "@/components/ui/LocationField";
 import type { Department, PetitionStatus } from "@/db/schema";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/en";
@@ -51,6 +52,9 @@ export function PetitionForm({
       title: "",
       scope: "ward",
       wardId: "",
+      place: "",
+      latitude: null,
+      longitude: null,
       petitionerName: "",
       petitionerPhone: "",
       submittedOn: new Date().toISOString().slice(0, 10),
@@ -240,6 +244,45 @@ export function PetitionForm({
             )}
           </div>
         )}
+      </div>
+
+      <div className="card space-y-4">
+        <p className="section-title">{dict.location.place}</p>
+
+        <div>
+          <label className="field-label" htmlFor="place">
+            {dict.location.place}{" "}
+            <span className="font-normal text-muted">({dict.common.optional})</span>
+          </label>
+          <input
+            id="place"
+            className="field"
+            value={form.place ?? ""}
+            onChange={(e) => set("place", e.target.value)}
+          />
+          {errorFor("place") ? (
+            <p className="field-error">{errorFor("place")}</p>
+          ) : (
+            <p className="field-hint">{dict.location.placeHint}</p>
+          )}
+        </div>
+
+        <LocationField
+          dict={dict}
+          value={
+            form.latitude != null && form.longitude != null
+              ? { latitude: form.latitude, longitude: form.longitude }
+              : null
+          }
+          onChange={(value) =>
+            setForm((prev) => ({
+              ...prev,
+              latitude: value?.latitude ?? null,
+              longitude: value?.longitude ?? null,
+            }))
+          }
+          error={errorFor("latitude")}
+        />
       </div>
 
       <div className="card space-y-4">

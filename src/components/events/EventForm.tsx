@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createEvent, updateEvent, type EventInput, type EventScope } from "@/server/event-actions";
 import { OrganiserPicker } from "@/components/events/OrganiserPicker";
 import { ErrorNote } from "@/components/ui/Empty";
+import { LocationField } from "@/components/ui/LocationField";
 import { PhotoField } from "@/components/ui/PhotoField";
 import { PhotoGalleryField } from "@/components/ui/PhotoGalleryField";
 import type { Locale } from "@/i18n/config";
@@ -36,6 +37,9 @@ export function EventForm({
       eventDate: new Date().toISOString().slice(0, 10),
       scope: "ward",
       wardId: "",
+      venue: "",
+      latitude: null,
+      longitude: null,
       description: "",
       bannerUrl: "",
       galleryUrls: [],
@@ -188,6 +192,41 @@ export function EventForm({
             {errorFor("wardId") && <p className="field-error">{errorFor("wardId")}</p>}
           </div>
         )}
+
+        <div>
+          <label className="field-label" htmlFor="venue">
+            {dict.location.venue}{" "}
+            <span className="font-normal text-muted">({dict.common.optional})</span>
+          </label>
+          <input
+            id="venue"
+            className="field"
+            value={form.venue ?? ""}
+            onChange={(e) => set("venue", e.target.value)}
+          />
+          {errorFor("venue") ? (
+            <p className="field-error">{errorFor("venue")}</p>
+          ) : (
+            <p className="field-hint">{dict.location.venueHint}</p>
+          )}
+        </div>
+
+        <LocationField
+          dict={dict}
+          value={
+            form.latitude != null && form.longitude != null
+              ? { latitude: form.latitude, longitude: form.longitude }
+              : null
+          }
+          onChange={(value) =>
+            setForm((prev) => ({
+              ...prev,
+              latitude: value?.latitude ?? null,
+              longitude: value?.longitude ?? null,
+            }))
+          }
+          error={errorFor("latitude")}
+        />
 
         <OrganiserPicker
           dict={dict}

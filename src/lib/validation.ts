@@ -1,4 +1,5 @@
 import { isValidEpic, normalizeEpic } from "@/lib/epic";
+import { isValidCoordinates, roundCoordinate } from "@/lib/location";
 import type { Gender } from "@/db/schema";
 
 export class ValidationError extends Error {
@@ -102,4 +103,33 @@ export function toSlug(value: string): string {
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "")
     .slice(0, 50);
+}
+
+/**
+ * A map pin, or nothing at all.
+ *
+ * The two columns move together: a latitude without a longitude is not a place, so
+ * one without the other is treated as no pin rather than as an error the person
+ * filling in the form has to understand.
+ */
+export function optionalCoordinates(
+  latitude: unknown,
+  longitude: unknown
+): { latitude: number; longitude: number } | { latitude: null; longitude: null } {
+  const none = { latitude: null, longitude: null } as const;
+
+  const lat = toNumber(latitude);
+  const lng = toNumber(longitude);
+  if (lat === null || lng === null) return none;
+
+  if (!isValidCoordinates(lat, lng)) {
+    throw new ValidationError("latitude", "That map location is not a valid place");
+  }
+  return { latitude: roundCoordinate(lat), longitude: roundCoordinate(lng) };
+}
+
+function toNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = typeof value === "number" ? value : Number(String(value).trim());
+  return Number.isFinite(n) ? n : null;
 }

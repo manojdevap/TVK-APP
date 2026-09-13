@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createMember, updateMember, type MemberInput } from "@/server/member-actions";
 import { ErrorNote } from "@/components/ui/Empty";
+import { LocationField } from "@/components/ui/LocationField";
 import { PhotoField } from "@/components/ui/PhotoField";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/en";
@@ -19,6 +20,8 @@ const emptyForm: MemberInput = {
   phone: "",
   address: "",
   voterId: "",
+  latitude: null,
+  longitude: null,
   photoUrl: "",
   joinedOn: "",
   notes: "",
@@ -54,7 +57,14 @@ export function MemberForm({
   const [fieldError, setFieldError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
   const [showOptional, setShowOptional] = useState(
-    Boolean(member?.phone || member?.address || member?.voterId || member?.joinedOn || member?.notes)
+    Boolean(
+      member?.phone ||
+        member?.address ||
+        member?.voterId ||
+        member?.joinedOn ||
+        member?.notes ||
+        member?.latitude
+    )
   );
 
   function set<K extends keyof MemberInput>(key: K, value: MemberInput[K]) {
@@ -78,7 +88,10 @@ export function MemberForm({
       setFieldError(result.field);
       setBusy(false);
       // Optional fields are collapsed by default — open them if that's where the problem is.
-      if (result.field && ["phone", "voterId", "joinedOn", "notes", "address"].includes(result.field)) {
+      if (
+        result.field &&
+        ["phone", "voterId", "joinedOn", "notes", "address", "latitude"].includes(result.field)
+      ) {
         setShowOptional(true);
       }
       return;
@@ -255,6 +268,23 @@ export function MemberForm({
             />
             {errorFor("address") && <p className="field-error">{errorFor("address")}</p>}
           </div>
+
+          <LocationField
+            dict={dict}
+            value={
+              form.latitude != null && form.longitude != null
+                ? { latitude: form.latitude, longitude: form.longitude }
+                : null
+            }
+            onChange={(value) =>
+              setForm((prev) => ({
+                ...prev,
+                latitude: value?.latitude ?? null,
+                longitude: value?.longitude ?? null,
+              }))
+            }
+            error={errorFor("latitude")}
+          />
 
           <div>
             <label className="field-label" htmlFor="joinedOn">

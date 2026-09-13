@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   date,
+  doublePrecision,
   index,
   integer,
   pgEnum,
@@ -84,6 +85,13 @@ export const members = pgTable(
     gender: genderEnum("gender").notNull(),
     address: text("address").notNull().default(""),
     voterId: text("voter_id"),
+    /**
+     * Where the address actually is, when someone has pinned it. Kept apart from
+     * the address text because a house in these wards is often found by landmark
+     * rather than by a line that any map can resolve.
+     */
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
     /** Absolute URL of the member's photo in blob storage; null when none was taken */
     photoUrl: text("photo_url"),
     wardId: uuid("ward_id")
@@ -120,6 +128,10 @@ export const events = pgTable(
     title: text("title").notNull(),
     description: text("description"),
     eventDate: date("event_date").notNull(),
+    /** Where it is held, as people would say it — "Ward 12 community hall" */
+    venue: text("venue"),
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
     /** The single image shown at the top of the event and as its thumbnail */
     bannerUrl: text("banner_url"),
     /** The ward this belongs to, or null when the whole party organised it */
@@ -172,6 +184,10 @@ export const petitions = pgTable(
     description: text("description"),
     /** The ward it concerns, or null when it affects the whole municipality */
     wardId: uuid("ward_id").references(() => wards.id, { onDelete: "restrict" }),
+    /** Where the problem is — the street or landmark, not the petitioner's address */
+    place: text("place"),
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
     petitionerName: text("petitioner_name").notNull(),
     petitionerPhone: text("petitioner_phone"),
     department: departmentEnum("department").notNull().default("corporation"),

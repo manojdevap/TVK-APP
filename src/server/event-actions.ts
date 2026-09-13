@@ -7,6 +7,7 @@ import { eventPhotos, events, members } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/guard";
 import { deletePhoto, isAppPhotoUrl } from "@/lib/storage/photos";
 import {
+  optionalCoordinates,
   optionalText,
   requireText,
   requireUuid,
@@ -22,6 +23,10 @@ export type EventInput = {
   /** "ward" needs a wardId; "party" is organised by the whole party and has none */
   scope: EventScope;
   wardId?: string;
+  /** Where it is held, in words */
+  venue?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   description?: string;
   bannerUrl?: string;
   /** Gallery image URLs, already uploaded, in display order */
@@ -108,6 +113,8 @@ async function parse(input: EventInput) {
     title: requireText(input.title, "title", "Title", 160),
     eventDate: requireEventDate(input.eventDate),
     wardId: resolveWard(input),
+    venue: optionalText(input.venue, "venue", "Venue", 160),
+    ...optionalCoordinates(input.latitude, input.longitude),
     description: optionalText(input.description, "description", "Description", 2000),
     bannerUrl: optionalBannerUrl(input.bannerUrl),
     organiserId: await resolveOrganiser(input.organiserId),

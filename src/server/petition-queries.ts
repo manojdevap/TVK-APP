@@ -10,6 +10,9 @@ export type PetitionRow = {
   description: string | null;
   wardId: string | null;
   wardNumber: number | null;
+  place: string | null;
+  latitude: number | null;
+  longitude: number | null;
   petitionerName: string;
   petitionerPhone: string | null;
   department: Department;
@@ -26,6 +29,9 @@ const petitionColumns = {
   description: petitions.description,
   wardId: petitions.wardId,
   wardNumber: wards.number,
+  place: petitions.place,
+  latitude: petitions.latitude,
+  longitude: petitions.longitude,
   petitionerName: petitions.petitionerName,
   petitionerPhone: petitions.petitionerPhone,
   department: petitions.department,

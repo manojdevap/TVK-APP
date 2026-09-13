@@ -3,6 +3,8 @@ import { AppHeader } from "@/components/shell/AppHeader";
 import { MemberForm } from "@/components/members/MemberForm";
 import { DeleteMemberButton } from "@/components/members/DeleteMemberButton";
 import { Avatar } from "@/components/ui/Avatar";
+import { DirectionsLink } from "@/components/ui/DirectionsLink";
+import { coordinatesOf } from "@/lib/location";
 import { getSession } from "@/lib/auth/guard";
 import { getMember, listRoles, listWards } from "@/server/queries";
 import { resolveLocale } from "@/i18n/config";
@@ -25,6 +27,7 @@ export default async function MemberDetailPage({
   if (!member) notFound();
 
   const roleName = locale === "ta" && member.roleNameTa ? member.roleNameTa : member.roleNameEn;
+  const pin = coordinatesOf(member);
 
   // Someone without admin rights sees the record, but cannot change it.
   if (!session?.isAdmin) {
@@ -48,6 +51,7 @@ export default async function MemberDetailPage({
             <Row label={dict.members.voterId} value={member.voterId ?? dict.common.none} />
             <Row label={dict.members.address} value={member.address || dict.common.none} />
           </dl>
+          {pin && <DirectionsLink dict={dict} coordinates={pin} place={member.address} />}
         </main>
       </>
     );
@@ -80,6 +84,8 @@ export default async function MemberDetailPage({
             phone: member.phone ?? "",
             address: member.address,
             voterId: member.voterId ?? "",
+            latitude: member.latitude,
+            longitude: member.longitude,
             photoUrl: member.photoUrl ?? "",
             joinedOn: member.joinedOn ?? "",
             notes: member.notes ?? "",

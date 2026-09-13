@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/shell/AppHeader";
+import { DirectionsLink } from "@/components/ui/DirectionsLink";
+import { coordinatesOf } from "@/lib/location";
 import { EventDate } from "@/components/events/EventDate";
 import { getSession } from "@/lib/auth/guard";
 import { getEvent, listEventPhotos } from "@/server/queries";
@@ -26,6 +28,8 @@ export default async function EventDetailPage({
   ]);
 
   if (!item) notFound();
+
+  const eventPin = coordinatesOf(item);
 
   const gallery = await listEventPhotos(item.id);
   const isAdmin = session?.isAdmin ?? false;
@@ -79,6 +83,8 @@ export default async function EventDetailPage({
             )}
           </Row>
 
+          {item.venue && <Row label={dict.location.venue}>{item.venue}</Row>}
+
           <Row label={dict.events.organisedBy}>
             {item.organiserId ? (
               <Link
@@ -92,6 +98,8 @@ export default async function EventDetailPage({
             )}
           </Row>
         </div>
+
+        {eventPin && <DirectionsLink dict={dict} coordinates={eventPin} place={item.venue} />}
 
         {item.description && (
           <div className="card">
