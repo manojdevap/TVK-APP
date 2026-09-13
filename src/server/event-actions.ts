@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getDb } from "@/db/client";
 import { eventPhotos, events, members } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/guard";
-import { deletePhoto } from "@/lib/storage/photos";
+import { deletePhoto, isAppPhotoUrl } from "@/lib/storage/photos";
 import {
   optionalText,
   requireText,
@@ -42,7 +42,7 @@ const MAX_GALLERY = 30;
 
 /** Only URLs this server issued are accepted back from the browser */
 function isOurEventPhoto(url: string): boolean {
-  return url.startsWith("/uploads/events/") || /^https:\/\/[\w.-]+\/events\/[\w.-]+$/.test(url);
+  return isAppPhotoUrl(url, "events");
 }
 
 function optionalBannerUrl(value: unknown): string | null {

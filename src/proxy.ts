@@ -13,6 +13,9 @@ function pathAfterLocale(pathname: string, locale: Locale): string {
 }
 
 /**
+ * Route handlers under /api are excluded and check the session themselves — the
+ * gate would otherwise redirect them to a locale-prefixed page.
+ *
  * An optimistic gate: it only reads the signed cookie, never the database, because
  * it runs on every request including prefetches. Each server action and page still
  * checks permissions itself — this just keeps signed-out people off app screens.
@@ -72,6 +75,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icons/|sw\\.js|offline\\.html|manifest\\.webmanifest|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|icons/|sw\\.js|offline\\.html|manifest\\.webmanifest|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico)$).*)",
   ],
 };

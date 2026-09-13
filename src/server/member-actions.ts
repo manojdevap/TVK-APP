@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getDb } from "@/db/client";
 import { members, roles } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/guard";
-import { deletePhoto } from "@/lib/storage/photos";
+import { deletePhoto, isAppPhotoUrl } from "@/lib/storage/photos";
 import {
   optionalDate,
   optionalPhone,
@@ -46,18 +46,14 @@ function parse(input: MemberInput) {
   };
 }
 
-/**
- * The browser only ever sends back a URL this server produced, so accept the two
- * shapes we issue and nothing else — never an arbitrary address from the client.
- */
+/** The browser only ever sends back a URL this server issued */
 function optionalPhotoUrl(value: unknown): string | null {
   const url = typeof value === "string" ? value.trim() : "";
   if (!url) return null;
 
-  const looksLikeOurs =
-    url.startsWith("/uploads/members/") || /^https:\/\/[\w.-]+\/members\/[\w.-]+$/.test(url);
-
-  if (!looksLikeOurs) throw new ValidationError("photoUrl", "That photo could not be saved");
+  if (!isAppPhotoUrl(url, "members")) {
+    throw new ValidationError("photoUrl", "That photo could not be saved");
+  }
   return url;
 }
 

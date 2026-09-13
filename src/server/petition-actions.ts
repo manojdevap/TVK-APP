@@ -6,7 +6,7 @@ import { getDb } from "@/db/client";
 import { members, petitionPhotos, petitions } from "@/db/schema";
 import type { Department, PetitionStatus } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/guard";
-import { deletePhoto } from "@/lib/storage/photos";
+import { deletePhoto, isAppPhotoUrl } from "@/lib/storage/photos";
 import {
   optionalPhone,
   optionalText,
@@ -69,10 +69,7 @@ function requireSubmittedOn(value: unknown): string {
 
 /** Only URLs this server issued are accepted back from the browser */
 function isOurPetitionPhoto(url: string): boolean {
-  return (
-    url.startsWith("/uploads/petitions/") ||
-    /^https:\/\/[\w.-]+\/petitions\/[\w.-]+$/.test(url)
-  );
+  return isAppPhotoUrl(url, "petitions");
 }
 
 function parsePhotos(value: unknown): string[] {
