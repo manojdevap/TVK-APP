@@ -44,6 +44,7 @@ Fill in both values:
 | --- | --- |
 | `DATABASE_URL` | Neon dashboard → your project → Connection Details → **pooled** connection string |
 | `SESSION_SECRET` | Generate one (below). At least 32 characters |
+| `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Blob. Needed for photos; without it, development writes to `public/uploads` |
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
@@ -116,6 +117,28 @@ npm run db:migrate      # applies it
 
 The generated SQL is committed, so every environment applies the same statements.
 `npm run db:studio` opens a browser UI over the data.
+
+## Photos
+
+Photos live in Vercel Blob, because a serverless filesystem does not survive the
+request that wrote to it. Create a store under **Storage → Blob** in the Vercel
+dashboard; it sets `BLOB_READ_WRITE_TOKEN` for the project.
+
+**Then redeploy.** Vercel injects environment variables at build time, so a
+deployment built before the store existed will not see the token and photo upload
+will keep failing until it is rebuilt.
+
+Without that token, development writes to `public/uploads` instead. Production
+refuses that path and returns an error rather than writing somewhere that vanishes.
+
+Photos uploaded locally are recorded with `/uploads/...` URLs that a deployment
+cannot serve. To move them across once the token is in `.env.local`:
+
+```bash
+npm run migrate-photos
+```
+
+It uploads each file, rewrites the row, and skips anything already in blob storage.
 
 ## Locked out?
 
